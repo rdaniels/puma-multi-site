@@ -1,4 +1,4 @@
-Puma_Multi_Site
+PumaMultiSite
 ===============
 
 Files used in configuring Puma to work with more than 1 site on server
