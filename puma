@@ -10,7 +10,8 @@
 #                    placed in /etc/init.d.
 ### END INIT INFO
 
-# Original Author: Darío Javier Cravero <dario@exordo.com>
+# Author: Darío Javier Cravero <dario@exordo.com>
+#
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
@@ -19,7 +20,7 @@ DESC="Puma rack web server"
 NAME=puma
 DAEMON=$NAME
 SCRIPTNAME=/etc/init.d/$NAME
-CONFIG=/etc/puma.conf
+CONFIG="/etc/${2:-puma.conf}"
 JUNGLE=`cat $CONFIG`
 RUNPUMA=/usr/local/bin/run-puma
 
@@ -53,6 +54,8 @@ do_start() {
 do_start_one() {
   PIDFILE=$1/pids/puma.pid
   PIDFILE="${PIDFILE/current/shared}"
+  # PIDFILE=/home/deploy/lincoln/shared/pids/puma.pid
+  # PIDFILE=$1/../shared/pids/puma.pid
 
   if [ -e $PIDFILE ]; then
     PID=`cat $PIDFILE`
@@ -93,6 +96,10 @@ do_stop_one() {
   PIDFILE="${PIDFILE/current/shared}"
   STATEFILE=$1/sockets/puma.state
   STATEFILE="${STATEFILE/current/shared}"
+  # PIDFILE=/home/deploy/lincoln/shared/pids/puma.pid
+  # STATEFILE=/home/deploy/lincoln/shared/sockets/puma.state
+  # PIDFILE=$1/../shared/pids/puma.pid
+  # STATEFILE=$1/../shared/sockets/puma.state
 
   if [ -e $PIDFILE ]; then
     PID=`cat $PIDFILE`
@@ -118,19 +125,47 @@ do_restart() {
   do_stop
   sleep 5
   do_start
+  #for i in $JUNGLE; do
+  #  dir=`echo $i | cut -d , -f 1`
+  #  do_restart_one $dir
+  #done
 }
 
 #
 # Function that sends a SIGUSR2 to the daemon/service
 #
 do_restart_one() {
+
   do_stop
   sleep 5
   do_start
+  # PIDFILE=$1/tmp/pids/puma.pid
+  # i=`grep $1 $CONFIG`
+  # dir=`echo $i | cut -d , -f 1`
+
+  # if [ -e $PIDFILE ]; then
+  #   log_daemon_msg "--> About to restart puma $1"
+  #   pumactl --state $dir/tmp/sockets/puma.state restart
+  #   # kill -s USR2 `cat $PIDFILE`
+  #   # TODO Check if process exist
+  # else
+  #   log_daemon_msg "--> Your puma was never playing... Let's get it out there first" 
+  #   user=`echo $i | cut -d , -f 2`
+  #   config_file=`echo $i | cut -d , -f 3`
+  #   if [ "$config_file" = "" ]; then
+  #     config_file="$dir/config/puma.rb"
+  #   fi
+  #   log_file=`echo $i | cut -d , -f 4`
+  #   if [ "$log_file" = "" ]; then
+  #     log_file="$dir/log/puma.log"
+  #   fi
+  #   do_start_one $dir $user $config_file $log_file
+  # fi
+  # 	return 0
 }
 
 #
-# Function that status the jungle 
+# Function that statuss the jungle 
 #
 do_status() {
   for i in $JUNGLE; do
@@ -147,13 +182,16 @@ do_status_one() {
   PIDFILE="${PIDFILE/current/shared}"
   STATEFILE=$1/sockets/puma.state
   STATEFILE="${STATEFILE/current/shared}"
-  
+  # PIDFILE=/home/deploy/lincoln/shared/pids/puma.pid
+  # PIDFILE=$1/../shared/pids/puma.pid
   i=`grep $1 $CONFIG`
   dir=`echo $i | cut -d , -f 1`
 
   if [ -e $PIDFILE ]; then
     log_daemon_msg "--> About to status puma $1"
     pumactl --state $STATEFILE stats
+    # pumactl --state /home/deploy/lincoln/shared/sockets/puma.state stats
+    # pumactl --state $dir/../shared/sockets/puma.state stats
 
     # kill -s USR2 `cat $PIDFILE`
     # TODO Check if process exist
