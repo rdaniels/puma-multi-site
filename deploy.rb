@@ -1,7 +1,7 @@
 require 'bundler/capistrano'
 
-set :application, 'dtcrafts'
-set :repository, 'https://delphidev5/svn/dtcrafts_rails/trunk'
+set :application, 'lincoln'
+set :repository, 'https://delphidev5/svn/lincoln_rails/trunk'
 set :scm, :subversion
 set :rvm_ruby_string, :local
 set :rvm_type, :system
@@ -11,19 +11,21 @@ set :deploy_to, "/home/#{user}/#{application}"
 set :ssh_options, { :forward_agent => true }
 set :use_sudo, false
 
-server '192.168.2.4', :app, :web, :db, :primary => true
+server '10.0.1.70', :app, :web, :db, :primary => true
 default_run_options[:pty] = true  # Must be set for the password prompt
-default_run_options[:shell] = '/bin/bash'
-
 
 namespace :deploy do
+
   task :start do
-    run "/etc/init.d/puma start"
+    run "/etc/init.d/puma start puma_lincoln.conf"
   end
   task :stop do
-    run "/etc/init.d/puma stop"
+    run "/etc/init.d/puma stop puma_lincoln.conf"
   end
   task :restart do
+    run "/etc/init.d/puma restart puma_lincoln.conf"
+  end
+  task :restart_all do
     run "/etc/init.d/puma restart"
   end
 end
@@ -38,5 +40,4 @@ namespace :assets do
     run "ln -s /media/syscat #{release_path}/public/syscat"
   end
 end
-
 
